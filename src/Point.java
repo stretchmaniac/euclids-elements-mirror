@@ -38,6 +38,10 @@ class Point {
         return this.scaleBy(1.0 / this.mag());
     }
 
+    public Point projectOnto(Point other){
+        return other.scaleBy(this.dot(other)/other.dot(other));
+    }
+
     // perpendicular vector
     public Point perp(){
         return new Point(-y, x);
