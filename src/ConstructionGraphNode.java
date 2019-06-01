@@ -119,8 +119,14 @@ class ConstructionGraphNode {
         Point d4 = dependencies.get(3).getPosition(regenerate);
 
         if(dependencyType == DependencyType.LINE_LINE){
-            // line line intersection 
+            position = Geo.lineLineIntersection(d1, d2, d3, d4);
         }
-
+        if(dependencyType == DependencyType.LINE_CIRCLE){
+            position = Geo.lineCircleIntersection(d3, d4, d1, d2, solutionClockwise);
+        }
+        if(dependencyType == DependencyType.CIRCLE_CIRCLE){
+            position = Geo.circleCircleIntersection(d1, d2, d3, d4, solutionClockwise);
+        }
+        return position;
     }
 }

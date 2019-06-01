@@ -36,4 +36,28 @@ class Geo{
         }
         return secondSol;
     }
+
+    public static Point circleCircleIntersection(Point circle1Center, Point circle1Edge, Point circle2Center, Point circle2Edge, boolean solutionClockwise){
+        double circle1Radius = circle1Edge.minus(circle1Center).mag();
+        double circle2Radius = circle2Edge.minus(circle2Center).mag();
+
+        double d = circle2Center.minus(circle1Center).mag();
+        if(d > circle1Radius + circle2Radius || d + circle1Radius < circle2Radius || d + circle2Radius < circle1Radius || d < EPSILON){
+            // silently ignoring degenerate case where they are the same circle
+            return null;
+        }
+        
+        double x = (d*d + circle1Radius * circle1Radius - circle2Radius * circle2Radius) / (2 * d);
+        double h = Math.sqrt(circle1Radius*circle1Radius - x*x);
+
+        Point dir = circle2Center.minus(circle1Center).normalize();
+        Point sol1 = circle1Center.plus(dir.scaleBy(x)).plus(dir.perp().scaleBy(h));
+        Point sol2 = sol1.plus(dir.perp().scaleBy(-2*h));
+
+        Point rad = circle1Edge.minus(circle1Center);
+        if(rad.cross2d(sol1) >= 0 && solutionClockwise == false){
+            return sol1;
+        }
+        return sol2;
+    }
 }
