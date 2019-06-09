@@ -11,6 +11,11 @@ class Point {
         this.y = y;
     }
 
+    @Override 
+    public String toString(){
+        return "(" + x + ", " + y + ")";
+    }
+
     public double mag(){
         return Math.sqrt(x*x + y*y);
     }
@@ -33,7 +38,7 @@ class Point {
 
     public Point normalize(){
         if(Math.abs(this.mag()) < Geo.EPSILON){
-            throw new Exception("You forgot to check if your vector was non-zero");
+            throw new IllegalArgumentException("You forgot to check if your vector was non-zero");
         }
         return this.scaleBy(1.0 / this.mag());
     }
