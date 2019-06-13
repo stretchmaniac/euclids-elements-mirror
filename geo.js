@@ -1,7 +1,12 @@
 
 const EPSILON = 1e-10;
 
-// usage: point = new Point(x, y); point.get(0) === point.x, point.get(1) === point.y, point.dot(otherPoint), etc
+// example usage for Point:
+// let pt = new Point(1, 1);
+// let pt2 = new Point(2, 1);
+// let d = pt.dot(pt2)   ( == 3 )
+// let pt3 = pt2.scaleBy(4)    ( == new Point(8, 2) )
+// etc...
 
 function Point(a, b){
     this.x = a;
@@ -20,25 +25,56 @@ function Point(a, b){
     this.perpendicular = () => new Point(-this.y, this.x);
 }
 
-// a and b are points
-function Line(a, b){
-    this.p1 = a;
-    this.p2 = b;
-    this.get = (index) => index === 0 ? this.p1 : this.p2;
-    this.intersect = (other) => {
-        if(Math.abs(this.p2.subtract(this.p1).cross2d(other.p2.subtract(other.p1))) < EPSILON){
-            // lines are parallel
-            return null;
-        }
+// works like an enum
+const STRUCT_TYPE = {
+    LINE: 0,
+    CIRCLE: 1
+}
 
-        const normal = this.p2.subtract(this.p1).perpendicular().normalize();
-        // how "much" the line segment p3 -> p4 goes "toward" the other line
-        const t = normal.dot(other.p2.subtract(other.p1));
-        return other.p1.add(other.p2.subtract(other.p1).scaleBy(-other.p1.subtract(this.p1).dot(normal) / t));
+// a and b are graph nodes
+function Line(a, b){
+    this.node1 = a;
+    this.node2 = b;
+    this.p1 = undefined;
+    this.p2 = undefined;
+    this.type = STRUCT_TYPE.LINE;
+    this.get = (index) => index === 0 ? this.p1 : this.p2;
+    this.intersect = (otherStruct, dependencyInfo) => {
+        if(otherStruct.type === STRUCT_TYPE.LINE){
+            // line line intersection
+            // ...
+        }else if(otherStruct.type === STRUCT_TYPE.CIRCLE){
+            // line circle intersection
+            // ... 
+        }else{
+            return undefined;
+        }
+    };
+    this.setCoords = () => {
+        this.p1 = getCoords(this.node1);
+        this.p2 = getCoords(this.node2);
     }
 }
 
-function Circle(center, radius){
-    this.center = center;
-    this.radius = radius;
+// center is a Point
+function Circle(centerNode, radialNode){
+    this.center = undefined;
+    this.radius = undefined;
+    this.radiusPt = undefined;
+    this.centerNode = centerNode;
+    this.radialNode = radialNode;
+    this.type = STRUCT_TYPE.CIRCLE;
+    this.intersection = (otherStruct, dependencyInfo) => {
+        if(otherStruct.type === STRUCT_TYPE.LINE){
+            return otherStruct.intersect(this, dependencyInfo);
+        }else if(otherStruct.type === STRUCT_TYPE.CIRCLE){
+            // circle circle intersection
+            // ... 
+        }
+    }
+    this.setCoords = () => {
+        this.center = getCoords(this.centerNode);
+        this.radiusPt = getCoords(this.radialNode);
+        this.radius = this.center.distance(this.radialPt);
+    }
 }
