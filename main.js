@@ -14,8 +14,11 @@ function init(){
 
     // add a line between the nodes we just created
     const newLine = new Line(lowerNode, upperNode); 
+    structs.push(newLine);
 
     // marvel at our creation 
     // (lets check the coordinates to see if we got them right)
     console.log(lowerNode.getCoords(), upperNode.getCoords());
+
+    drawGraph();
 }
