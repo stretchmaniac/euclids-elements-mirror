@@ -15,11 +15,12 @@ function initDraw(){
             drawGraph();
         }
         mousePos = currentPt;
+
+        animationOnHover(mousePos);
     });
 
     canvas.addEventListener('wheel', (e) => {
         let scaleAmount = 1 + e.deltaY / 300;
-        console.log(scaleAmount);
         zoom(mousePos, scaleAmount);
         drawGraph();
     });
@@ -51,7 +52,7 @@ function snap(){
 
 function drawNode(ctx, node){
     let center = graphToScreen(node.getCoords());
-    let radius = 3; // px 
+    let radius = 5; // px 
 
     ctx.fillStyle = 'rgba(0, 255, 0, .75)';
 
@@ -65,6 +66,7 @@ function drawCircle(ctx, struct){
     let radius = graphToScreen(struct.centerNode.getCoords()).distance(graphToScreen(struct.radialNode.getCoords()));
 
     ctx.strokeStyle = 'rgba(0, 0, 0, .5)';
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(center.x, center.y, radius, 0, 2*Math.PI);
     ctx.stroke();
@@ -106,7 +108,7 @@ function drawGraph(){
     }
 }
 
-let scale = 100;
+let scale = 200;
 let translate = new Point(250, 250);
 function graphToScreen(realPoint){
     return realPoint.scaleBy(scale).add(translate);
@@ -129,4 +131,135 @@ function zoom(pixCenter, zoomPercent){
     let newScale = scale / zoomPercent;
     translate = center.scaleBy(scale - newScale).add(translate);
     scale = newScale;
+}
+
+// called when mousemove is called for canvas
+function animationOnHover(mousePos){
+    const snapDist = 5; // px
+    const animationDuration = 100;
+    // snap to nodes if close enough
+    for(let node of graph){
+        if(graphToScreen(node.getCoords()).distance(mousePos) <= snapDist){
+            if(!node.animationObj){
+                node.animationObj = new AnimationObject(
+                    (localTime, ctx) => {
+                        let maxRadius = 5;
+                        let duration = animationDuration;
+                        let radius = localTime < duration ? maxRadius * localTime / duration : maxRadius;
+                        ctx.beginPath();
+                        ctx.fillStyle = 'rgb(0,0,0)';
+                        let realCoords = graphToScreen(node.getCoords());
+                        ctx.arc(realCoords.x, realCoords.y, radius, 0, 2*Math.PI);
+                        ctx.fill();
+                    },
+                    (time) => false, 
+                    0,
+                    () => {
+                        // schedule a parallel event for mouseout (i.e onkill) on the node
+                        if(node.closeAnimationObj){
+                            node.closeAnimationObj.kill();
+                        }
+                        node.closeAnimationObj = new AnimationObject(
+                            (localTime, ctx) => {
+                                let maxRadius = 5;
+                                let duration = animationDuration;
+                                let radius = maxRadius - (localTime < duration ? maxRadius * localTime / duration : maxRadius);
+                                ctx.beginPath();
+                                ctx.fillStyle = 'rgb(0,0,0)';
+                                let realCoords = graphToScreen(node.getCoords());
+                                ctx.arc(realCoords.x, realCoords.y, radius, 0, 2*Math.PI);
+                                ctx.fill();
+                            },
+                            (time) => time > 300,
+                            0,
+                            () => {}
+                        );
+
+                        node.closeAnimationObj.start();
+                    }
+                )
+
+                node.animationObj.start();
+            }
+        } else {
+            if(node.animationObj){
+                node.animationObj.kill();
+                node.animationObj = undefined;
+            }
+        }
+    }
+}
+
+// behold my boredom: an animation queue
+// let's say you want to have a nice 300ms animation as you hover over a point. 
+// You would make an animation object: 
+// let animationObj = new AnimationObject( (localTime, ctx) => { --draw circle of radius r a function of localTime--} , (time) => time > 300, 0, () => {} );
+// ... start it up
+// animationObj.start();
+// the object will get updated as it performs and you can query it's state:
+// if(animationObj.finished === true) { ... }
+// ... or kill it
+// animationObj.kill();
+
+let aliveAnimations = [];
+
+function AnimationObject(animationFunc, stopFunc, delay, onFinish){
+    this.animationFunc = animationFunc;
+    this.stopFunc = stopFunc;
+    this.delay = delay;
+    this.onFinish = onFinish;
+
+    this.finished = false;
+    this.started = false;
+    this.startTime = undefined;
+    this.scheduledForDecommission = false;
+
+    let aObj = this;
+
+    this.kill = () => { aObj.scheduledForDecommission = true; };
+
+    this.start = () => {
+        setTimeout(
+            () => {
+                aliveAnimations.push(aObj);
+                // i.e. if it was empty before
+                if(aliveAnimations.length === 1){
+                    window.requestAnimationFrame(animationFrame);
+                }
+            }
+        , delay);
+    }
+}
+
+function animationFrame(timestamp){
+    drawGraph();
+    let ctx = document.getElementById('canvas').getContext('2d');
+    // backwards so we can remove elements as we go if needed
+    for(let j = aliveAnimations.length - 1; j >= 0; j--){
+        let animationObj = aliveAnimations[j];
+
+        // beginning of life house keeping 
+        if(!animationObj.startTime){ // mostly equivalent to animationObj.startTime === undefined
+            animationObj.startTime = timestamp;
+            animationObj.started = true;
+        }
+
+        // do drawing 
+        let age = timestamp - animationObj.startTime;
+        animationObj.animationFunc(age, ctx);
+
+        // end of life house keeping 
+        if(animationObj.stopFunc(age) || animationObj.scheduledForDecommission){
+            // remove from aliveAnimations 
+            aliveAnimations.splice(j, 1);
+            animationObj.onFinish();
+        }
+    }
+
+    if(aliveAnimations.length > 0){
+        requestAnimationFrame(animationFrame);
+    } else {
+        // clear any remaining junk we may have on the screen
+        drawGraph();
+    }
 }
