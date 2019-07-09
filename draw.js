@@ -4,6 +4,17 @@ function initDraw(){
     
 }
 
+// returns a list of nodes within NODE_RADIUS of pixelCoords
+function getNodesOnScreen(pixelCoords){
+    let res = [];
+    for(let node of graph){
+        if(graphToScreen(node.getCoords()).distance(mousePos) <= NODE_RADIUS){
+            res.push(node);
+        }
+    }
+    return res;
+}
+
 function drawNode(ctx, node, color){
     let center = graphToScreen(node.getCoords());
     let radius = NODE_RADIUS; 
