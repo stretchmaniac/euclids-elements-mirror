@@ -1,5 +1,7 @@
 const NODE_RADIUS = 8; // in pixels
 
+let extraStructs = [];
+
 function initDraw(){
     
 }
@@ -8,7 +10,7 @@ function initDraw(){
 function getNodesOnScreen(pixelCoords){
     let res = [];
     for(let node of graph){
-        if(graphToScreen(node.getCoords()).distance(mousePos) <= NODE_RADIUS){
+        if(graphToScreen(node.getCoords()).distance(pixelCoords) <= NODE_RADIUS){
             res.push(node);
         }
     }
@@ -28,6 +30,21 @@ function drawNode(ctx, node, color){
     ctx.arc(center.x, center.y, radius, 0, 2*Math.PI);
     ctx.fill();
 }
+
+function drawStruct(struct, canvas, ctx){
+    if(!canvas){
+        canvas = document.getElementById('canvas');
+    }
+    if(!ctx){
+        ctx = canvas.getContext('2d');
+    }
+    if(struct.type === STRUCT_TYPE.CIRCLE){
+        drawCircle(ctx, struct);
+    } else if(struct.type === STRUCT_TYPE.LINE){
+        drawLine(canvas, ctx, struct);
+    }
+}
+
 function drawCircle(ctx, struct){
     let center = graphToScreen(struct.centerNode.getCoords());
     let radius = graphToScreen(struct.centerNode.getCoords()).distance(graphToScreen(struct.radialNode.getCoords()));
@@ -67,11 +84,10 @@ function drawGraph(){
         drawNode(ctx, node);
     }
     for(let struct of structs){
-        if(struct.type === STRUCT_TYPE.LINE){
-            drawLine(canvas, ctx, struct);
-        } else if(struct.type === STRUCT_TYPE.CIRCLE){
-            drawCircle(ctx, struct);
-        }
+        drawStruct(struct, canvas, ctx);
+    }
+    for(let struct of extraStructs){
+        drawStruct(struct, canvas, ctx);
     }
 }
 // a little bit of a hack to get drawGraph visible to screen.js
