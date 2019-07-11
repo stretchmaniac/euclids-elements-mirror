@@ -16,7 +16,7 @@ function Point(a, b){
     this.add = (other) => new Point(this.x + other.x, this.y + other.y);
     this.subtract = (other) => new Point(this.x - other.x, this.y - other.y);
     this.scaleBy = (scalar) => new Point(scalar * this.x, scalar * this.y);
-    this.dot = (other) => dot.x*other.x + dot.y*other.y;
+    this.dot = (other) => this.x*other.x + this.y*other.y;
     this.cross2d = (other) => this.x*other.y - other.x*this.y;
     this.length = () => Math.sqrt(this.x**2 + this.y**2);
     this.lengthSquared = () => this.x**2 + this.y**2;
@@ -61,7 +61,7 @@ function Line(node1, node2){
             let center = otherStruct.center;
             let R = otherStruct.radius;
             let lineDir = this.p2.subtract(this.p1).normalize();
-            let toCenter = center.subtract(p1);
+            let toCenter = center.subtract(this.p1);
             let r = Math.abs(lineDir.cross2d(toCenter));
             if(r > R){
                 console.log("Attempt to intersect line and circle where intersection does not exist");
@@ -86,8 +86,13 @@ function Line(node1, node2){
         }
     };
     this.setCoords = () => {
-        this.p1 = getCoords(this.node1);
-        this.p2 = getCoords(this.node2);
+        this.p1 = this.node1.getCoords();
+        this.p2 = this.node2.getCoords();
+    };
+    this.incidentTo = (coords, tolerance) => {
+        this.setCoords();
+        let distToLine = Math.abs(coords.subtract(this.p1).cross2d(this.p2.subtract(this.p1).normalize()));
+        return distToLine <= tolerance;
     }
 }
 
@@ -118,8 +123,8 @@ function Circle(centerNode, radialNode){
             let h = Math.sqrt(this.radius**2 - x**2);
             let basis1 = otherCenter.subtract(this.center).normalize();
             let basis2 = basis1.perpendicular(); // also normalized
-            let sol1 = basis1.scaleBy(x).add(basis2.scaleBy(h));
-            let sol2 = basis1.scaleBy(x).add(basis2.scaleBy(-h));
+            let sol1 = basis1.scaleBy(x).add(basis2.scaleBy(h)).add(this.center);
+            let sol2 = basis1.scaleBy(x).add(basis2.scaleBy(-h)).add(this.center);
 
             let testPt = dependencyInfo.nearestTo;
             let d1 = sol1.distanceSquared(testPt), d2 = sol2.distanceSquared(testPt);
@@ -133,5 +138,11 @@ function Circle(centerNode, radialNode){
         this.center = this.centerNode.getCoords();
         this.radiusPt = this.radialNode.getCoords();
         this.radius = this.center.distance(this.radiusPt);
+    }
+    this.incidentTo = (coords, tolerance) => {
+        this.setCoords();
+        let distToCenter = coords.distance(this.center);
+        console.log(Math.abs(distToCenter - this.radius), tolerance);
+        return Math.abs(distToCenter - this.radius) <= tolerance;
     }
 }

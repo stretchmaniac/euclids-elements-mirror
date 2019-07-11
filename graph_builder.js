@@ -101,6 +101,14 @@ function selection(pos){
 
     if(nodes.length === 0) { 
         selectionInfo.escape();
+        
+        // check for intersection points
+        let intersection = getStructIntersection(pos);
+        if(intersection){
+            // add a node here 
+            addNode(intersection[0], intersection[1], { nearestTo: screenToGraph(pos) } );
+        }
+
         drawGraph();
         return;
     }
@@ -108,6 +116,11 @@ function selection(pos){
     // pick the first one. If they want a different node they can zoom in
     let node = nodes[0];
     
+    // make sure this node is not already in nodeList 
+    if(selectionInfo.nodeList.indexOf(node) !== -1){
+        return;
+    }
+
     selectionInfo.nodeList.push(node);
     if(selectionInfo.nodeList.length === selectionInfo.hook.dependencyCount){
         selectionInfo.execute();

@@ -1,4 +1,5 @@
 const NODE_RADIUS = 8; // in pixels
+const INTERSECTION_DETECTION_RADIUS = 4; // in pixels
 
 let extraStructs = [];
 
@@ -15,6 +16,26 @@ function getNodesOnScreen(pixelCoords){
         }
     }
     return res;
+}
+
+// returns a pair of structs that intersect within INTERSECTION_DETECTION_RADIUS of pixelCoords, 
+// if such a pair exists. Otherwise returns undefined
+function getStructIntersection(pixelCoords){
+    let structsInRange = [];
+    let graphCoords = screenToGraph(pixelCoords);
+    let tolerance = screenLengthToGraphLength(INTERSECTION_DETECTION_RADIUS); 
+    for(let struct of structs){
+        if(struct.incidentTo(graphCoords, tolerance)){
+            structsInRange.push(struct);
+        }
+    }
+
+    if(structsInRange.length < 2){
+        return undefined;
+    }
+
+    // pick the "oldest" structs. Coincidentally, they are the first in the list 
+    return [structsInRange[0], structsInRange[1]];
 }
 
 function drawNode(ctx, node, color){

@@ -31,6 +31,17 @@ function graphToScreen(realPoint){
 function screenToGraph(screenPt){
     return screenPt.subtract(translate).scaleBy(1/scale);
 }
+function screenLengthToGraphLength(screenLength){
+    // |screenToGraph((screenLength, 0)) - screenToGraph((0,0))| = |(screenLength - translate.x, -translate.y) / scale - (-translate.x, -translate.y) / scale|
+    // = |(1/scale) (screenLength, 0)| 
+    // = screenLength / scale
+    return screenLength / scale;
+}
+function graphLengthToScreenLength(graphLength){
+    // |graphToScreen((graphLength, 0)) - graphToScreen((0,0))| = |(scale*graphLength + translate.x, translate.y) - (translate.x, translate.y)| 
+    // = scale * graphLength 
+    return scale * graphLength;
+}
 // panBy is a Point in pixels
 function pan(panBy){
     translate = translate.add(panBy);
