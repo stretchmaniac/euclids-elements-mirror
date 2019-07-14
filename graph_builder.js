@@ -5,12 +5,46 @@ let SELECTION_HOOKS = {
         dependencyCount: 2,
         getStruct: (completedNodeList) => {
             return new Circle(...completedNodeList);
+        },
+        isDuplicate: (completedNodeList) => {
+            // it is a duplicate iff the center is the same as some existing circle and has 
+            // the same radius (+/- epsilon. Note that it is perfectly possible to make circles 
+            // that are technically distinct but within epsilon of each other everywhere. In this case, 
+            // we would still like to mark the circle as a duplicate since we cannot tell the circles apart, 
+            // intersection tests will be unreliable, etc.)
+            let centerNode = completedNodeList[0];
+            let radius = centerNode.getCoords().distance(completedNodeList[1].getCoords());
+            for(let struct of structs){
+                if(struct.type === STRUCT_TYPE.CIRCLE && struct.centerNode === centerNode && Math.abs(struct.radius - radius) <= EPSILON){
+                    return true;
+                }
+            }
+            return false;
         }
     }, 
     LINE: {
         dependencyCount: 2,
         getStruct: (completedNodeList) => {
             return new Line(...completedNodeList)
+        },
+        isDuplicate: (completedNodeList) => {
+            // we say a line is indistinguishable from another line iff 
+            // the endpoints of this line lie within epsilon of the the other line. 
+            // This may not be the best way to do it, but it will work for now 
+            let pos1 = completedNodeList[0].getCoords();
+            let pos2 = completedNodeList[1].getCoords();
+            for(let struct of structs){
+                if(struct.type === STRUCT_TYPE.LINE){
+                    let origin = struct.p1;
+                    let dir = struct.p2.subtract(struct.p1).normalize();
+                    let distPos1 = pos1.subtract(origin).cross2d(dir);
+                    let distPos2 = pos2.subtract(origin).cross2d(dir);
+                    if(Math.abs(distPos1) <= EPSILON && Math.abs(distPos2) <= EPSILON){
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 }
@@ -29,7 +63,9 @@ let selectionInfo = {
     // rather this refers to document (as far as I can tell). By writing the explicit function things 
     // seem to work.
     execute: function(){ 
-        this.hook.execute(this.nodeList); 
+        if(!this.hook.isDuplicate(this.nodeList)){
+            this.hook.execute(this.nodeList); 
+        }
         this.escape();
     },
     escape: function(){

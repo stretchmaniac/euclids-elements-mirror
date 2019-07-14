@@ -48,6 +48,8 @@ function pan(panBy){
 }
 // i.e. center of zoom (in screen coords) and how much of the screen should become the full screen (so .1 is too much zoom)
 function zoom(pixCenter, zoomPercent){
+    // TODO: Prevent zooming to a point where NODE_RADIUS > float precision (i.e. guarantee that nodes are created in 
+    // measurably distinct positions)
     let center = screenToGraph(pixCenter);
     // it is intuitive that scale should be multiplied by 1 / zoomPercent. What should 
     // happen to translate? 

@@ -1,6 +1,8 @@
 function init(){
     // we start with two points (root1 and root2)
 
+    // EXAMPLE CREATION
+    /*
     // make a circle centered at (0, 0) with radius 1 
     const circle1 = new Circle(root1, root2);
     structs.push(circle1);
@@ -19,6 +21,12 @@ function init(){
     // marvel at our creation 
     // (lets check the coordinates to see if we got them right)
     console.log(lowerNode.getCoords(), upperNode.getCoords());
+    */
 
     drawGraph();
+    
 }
+
+// challenge ideas:
+// 1. Create two circles, one an interior tangent of the other so that no line passes through the point of tangency
+// 2. make regular polygons: triangle, square, pentagon, hexagon

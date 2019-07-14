@@ -67,8 +67,9 @@ function drawStruct(struct, canvas, ctx){
 }
 
 function drawCircle(ctx, struct){
-    let center = graphToScreen(struct.centerNode.getCoords());
-    let radius = graphToScreen(struct.centerNode.getCoords()).distance(graphToScreen(struct.radialNode.getCoords()));
+    struct.setCoords();
+    let center = graphToScreen(struct.center);
+    let radius = graphLengthToScreenLength(struct.radius);
 
     ctx.strokeStyle = 'rgba(0, 0, 0, .5)';
     ctx.lineWidth = 3;
@@ -77,8 +78,9 @@ function drawCircle(ctx, struct){
     ctx.stroke();
 }
 function drawLine(canvas, ctx, struct){
-    let p1 = graphToScreen(struct.node1.getCoords());
-    let p2 = graphToScreen(struct.node2.getCoords());
+    struct.setCoords();
+    let p1 = graphToScreen(struct.p1);
+    let p2 = graphToScreen(struct.p2);
 
     // we want to draw the line to the edges of the screen 
     let dist = Math.max(Math.abs(p1.x - p2.x), Math.abs(p1.y - p2.y));

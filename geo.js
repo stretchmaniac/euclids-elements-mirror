@@ -86,8 +86,10 @@ function Line(node1, node2){
         }
     };
     this.setCoords = () => {
-        this.p1 = this.node1.getCoords();
-        this.p2 = this.node2.getCoords();
+        if(!this.p1 || !this.p2){
+            this.p1 = this.node1.getCoords();
+            this.p2 = this.node2.getCoords();
+        }
     };
     this.incidentTo = (coords, tolerance) => {
         this.setCoords();
@@ -137,12 +139,13 @@ function Circle(centerNode, radialNode){
     this.setCoords = () => {
         this.center = this.centerNode.getCoords();
         this.radiusPt = this.radialNode.getCoords();
-        this.radius = this.center.distance(this.radiusPt);
+        if(!this.radius){
+            this.radius = this.center.distance(this.radiusPt);
+        }
     }
     this.incidentTo = (coords, tolerance) => {
         this.setCoords();
         let distToCenter = coords.distance(this.center);
-        console.log(Math.abs(distToCenter - this.radius), tolerance);
         return Math.abs(distToCenter - this.radius) <= tolerance;
     }
 }
