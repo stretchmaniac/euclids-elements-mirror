@@ -53,12 +53,6 @@ function drawNode(ctx, node, color){
 }
 
 function drawStruct(struct, canvas, ctx){
-    if(!canvas){
-        canvas = document.getElementById('canvas');
-    }
-    if(!ctx){
-        ctx = canvas.getContext('2d');
-    }
     if(struct.type === STRUCT_TYPE.CIRCLE){
         drawCircle(ctx, struct);
     } else if(struct.type === STRUCT_TYPE.LINE){
@@ -71,29 +65,30 @@ function drawCircle(ctx, struct){
     let center = graphToScreen(struct.center);
     let radius = graphLengthToScreenLength(struct.radius);
 
-    ctx.strokeStyle = 'rgba(0, 0, 0, .5)';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
+    ctx.moveTo(center.x + radius, center.y);
     ctx.arc(center.x, center.y, radius, 0, 2*Math.PI);
-    ctx.stroke();
 }
 function drawLine(canvas, ctx, struct){
     struct.setCoords();
     let p1 = graphToScreen(struct.p1);
     let p2 = graphToScreen(struct.p2);
+    let dir = p2.subtract(p1);
 
-    // we want to draw the line to the edges of the screen 
-    let dist = Math.max(Math.abs(p1.x - p2.x), Math.abs(p1.y - p2.y));
-    // should be more than sufficient
-    let factor = 2 * Math.min(canvas.clientWidth / dist, canvas.clientHeight / dist);
-    let newP1 = p2.add(p1.subtract(p2).scaleBy(factor));
-    let newP2 = p1.add(p2.subtract(p1).scaleBy(factor));
+    let screenRadius = Math.sqrt(canvas.clientHeight**2 + canvas.clientWidth**2) / 2;
+    let screenCenter = new Point(canvas.clientWidth / 2, canvas.clientHeight / 2);
+    let closestPt = screenCenter.subtract(p1).projectOnto(dir).add(p1);
 
-    ctx.strokeStyle = 'rgba(0, 0, 0, .5)';
-    ctx.beginPath();
+    if(closestPt.distanceSquared(screenCenter) > screenRadius**2){
+        return; 
+    }
+
+    dir = dir.normalize();
+
+    let newP1 = closestPt.add(dir.scaleBy(screenRadius));
+    let newP2 = closestPt.add(dir.scaleBy(-screenRadius));
+
     ctx.moveTo(newP1.x, newP1.y);
     ctx.lineTo(newP2.x, newP2.y);
-    ctx.stroke();
 }
 
 function drawGraph(){
@@ -106,12 +101,18 @@ function drawGraph(){
     for(let node of graph){
         drawNode(ctx, node);
     }
+
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(0,0,0,.5)';
+    ctx.beginPath();
     for(let struct of structs){
         drawStruct(struct, canvas, ctx);
     }
     for(let struct of extraStructs){
         drawStruct(struct, canvas, ctx);
     }
+    console.log(extraStructs.length, structs.length);
+    ctx.stroke();
 }
 // a little bit of a hack to get drawGraph visible to screen.js
 window.drawGraph = drawGraph;
