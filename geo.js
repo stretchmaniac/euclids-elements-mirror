@@ -22,7 +22,7 @@ function Point(a, b){
     this.lengthSquared = () => this.x**2 + this.y**2;
     this.distance = (other) => this.subtract(other).length();
     this.distanceSquared = (other) => this.subtract(other).lengthSquared();
-    this.perpendicular = () => new Point(-this.y, this.x);
+    this.perpendicular = () => new Point(-this.y, this.x); // defined as the perpendicular vector to the left of this point
     this.normalize = () => this.scaleBy(1 / this.length());
     this.projectOnto = (other) => other.scaleBy(this.dot(other)/other.lengthSquared());
 }
@@ -33,6 +33,11 @@ const STRUCT_TYPE = {
     CIRCLE: 1
 }
 
+const CONSTRUCT_TYPE = {
+    NODE: 0,
+    STRUCT: 1
+};
+
 // a and b are graph nodes
 function Line(node1, node2){
     this.node1 = node1;
@@ -40,6 +45,7 @@ function Line(node1, node2){
     this.p1 = undefined;
     this.p2 = undefined;
     this.type = STRUCT_TYPE.LINE;
+    this.hidden = false;
     this.get = (index) => index === 0 ? this.p1 : this.p2;
     this.intersect = (otherStruct, dependencyInfo) => {
         if(otherStruct.type === STRUCT_TYPE.LINE){
@@ -106,6 +112,7 @@ function Circle(centerNode, radialNode){
     this.centerNode = centerNode;
     this.radialNode = radialNode;
     this.type = STRUCT_TYPE.CIRCLE;
+    this.hidden = false;
     this.intersect = (otherStruct, dependencyInfo) => {
         if(otherStruct.type === STRUCT_TYPE.LINE){
             return otherStruct.intersect(this, dependencyInfo);

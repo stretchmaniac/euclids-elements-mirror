@@ -12,6 +12,7 @@ function Node(dependencies, dependencyInfo, coordinates){
     this.dependencies = dependencies;
     this.dependencyInfo = dependencyInfo;
     this.coordinates = coordinates;
+    this.hidden = false;
 
     this.getCoords = () => {
         // i.e. if the property "coordinates" exists in node
@@ -29,13 +30,4 @@ function Node(dependencies, dependencyInfo, coordinates){
         this.coordinates = struct1.intersect(struct2, this.dependencyInfo);
         return this.coordinates;
     }
-}
-
-// adds the intersection point between struct1 and struct2 to the graph
-function addNode(struct1, struct2, dependencyInfo){
-
-    const newNode = new Node([struct1, struct2], dependencyInfo, undefined);
-    graph.push(newNode);
-
-    return newNode;
 }

@@ -11,8 +11,10 @@ function init(){
     structs.push(circle2);
 
     // now add the two intersection points between the circles
-    const lowerNode = addNode(circle1, circle2, { nearestTo: new Point(0.5, -1) }); // the lower intersection 
-    const upperNode = addNode(circle1, circle2, { nearestTo: new Point(0.5, 1) });  // the higher intersection
+    const lowerNode = new Node([circle1, circle2], { nearestTo: new Point(0.5, -1) }); // the lower intersection 
+    const upperNode = new Node([circle1, circle2], { nearestTo: new Point(0.5, 1) });  // the higher intersection
+
+    graph.push(lowerNode, upperNode);
 
     // add a line between the nodes we just created
     const newLine = new Line(lowerNode, upperNode); 

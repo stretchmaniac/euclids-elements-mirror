@@ -8,10 +8,10 @@ function initDraw(){
 }
 
 // returns a list of nodes within NODE_RADIUS of pixelCoords
-function getNodesOnScreen(pixelCoords){
+function getVisibleNodesOnScreen(pixelCoords){
     let res = [];
     for(let node of graph){
-        if(graphToScreen(node.getCoords()).distance(pixelCoords) <= NODE_RADIUS){
+        if(graphToScreen(node.getCoords()).distance(pixelCoords) <= NODE_RADIUS && !node.hidden){
             res.push(node);
         }
     }
@@ -39,6 +39,9 @@ function getStructIntersection(pixelCoords){
 }
 
 function drawNode(ctx, node, color){
+    if(node.hidden){
+        return;
+    }
     let center = graphToScreen(node.getCoords());
     let radius = NODE_RADIUS; 
 
@@ -53,6 +56,9 @@ function drawNode(ctx, node, color){
 }
 
 function drawStruct(struct, canvas, ctx){
+    if(struct.hidden){
+        return;
+    }
     if(struct.type === STRUCT_TYPE.CIRCLE){
         drawCircle(ctx, struct);
     } else if(struct.type === STRUCT_TYPE.LINE){
