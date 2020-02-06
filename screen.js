@@ -1,6 +1,13 @@
 // for panning and scrolling 
 function initScreen(){
 
+    // increase canvas size to fit screen
+    let canvas = document.getElementById('canvas');
+    let body = document.getElementById('body');
+
+    canvas.width = body.clientWidth;
+    canvas.height = body.clientHeight;
+
     let mousePos = undefined;
 
     canvas.addEventListener("mousedown", (e) => { mousePos = new Point(e.clientX, e.clientY); });
@@ -18,9 +25,13 @@ function initScreen(){
 
     canvas.addEventListener('wheel', (e) => {
         let scaleAmount = 1 + e.deltaY / 300;
+        scaleAmount = Math.max(.6, scaleAmount);
+        scaleAmount = Math.min(1 / .6, scaleAmount);
         zoom(mousePos, scaleAmount);
         window.drawGraph();
     });
+
+    drawGraph();
 }
 
 let scale = 200;

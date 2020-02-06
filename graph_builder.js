@@ -3,6 +3,7 @@
 let SELECTION_HOOKS = {
     CIRCLE: {
         dependencyCount: 2,
+        buttonID: 'circle_button',
         getStruct: (completedNodeList) => {
             return new Circle(...completedNodeList);
         },
@@ -24,6 +25,7 @@ let SELECTION_HOOKS = {
     }, 
     LINE: {
         dependencyCount: 2,
+        buttonID: 'line_button',
         getStruct: (completedNodeList) => {
             return new Line(...completedNodeList)
         },
@@ -123,12 +125,23 @@ function initGraphBuilder(){
     document.getElementById('line_button').addEventListener('click', () => {
         selectionInfo.hook = SELECTION_HOOKS.LINE;
     });
+    for(let node of document.getElementsByClassName('struct_button')){
+        node.addEventListener('click', onStructButtonClicked);
+    }
     document.addEventListener('keydown', (e) => {
         if(e.key === 'Escape'){
             selectionInfo.escape();
             drawGraph();
         }
     })
+}
+
+function onStructButtonClicked(event){
+    // change button styles
+    for(let element of document.getElementsByClassName('struct_button')){
+        element.style.border = 'none';
+    }
+    event.toElement.style.border = '1px solid black';
 }
 
 function selection(pos){

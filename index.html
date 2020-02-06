@@ -14,10 +14,12 @@
 	<link rel='stylesheet' href='styles.css'>
 </head>
 
-<body onload='init(); initDraw(); initScreen(); initAnimation(); initGraphBuilder()'>
+<body onload='init(); initDraw(); initScreen(); initAnimation(); initGraphBuilder()' id='body'>
 <canvas id='canvas' width='800px' height='800px'></canvas>
-<button id='line_button'>Line</button>
-<button id='circle_button'>Circle</button>
+<div id='button_container'>
+	<button id='line_button' class='struct_button'>Line</button>
+	<button id='circle_button' class='struct_button'>Circle</button>
+</div>
 </body>
 
 </html>

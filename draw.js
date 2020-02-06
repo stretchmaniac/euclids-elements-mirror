@@ -91,19 +91,72 @@ function drawLine(canvas, ctx, struct){
     ctx.lineTo(newP2.x, newP2.y);
 }
 
+// real modulus function
+function mod(n, m) {
+    return ((n % m) + m) % m;
+  }
+
+function drawGrid(ctx, canvas){
+    let viewWidth = screenLengthToGraphLength(canvas.clientWidth);
+    let viewHeight = screenLengthToGraphLength(canvas.clientHeight);
+
+    let dominantDim = Math.max(viewWidth, viewHeight);
+    let maxCellWidth = dominantDim / 10;
+    
+    let val = Math.log10(maxCellWidth);
+    let is10 = mod(val, 1) < .5;
+    let actualCellWidth = is10 ? 10**Math.floor(val) : 2 * 10**Math.floor(val);
+
+    let width = canvas.clientWidth;
+    let height = canvas.clientHeight;
+    let minPt = screenToGraph(new Point(0, 0));
+    let maxPt = screenToGraph(new Point(width, height));
+    let minX = minPt.x;
+    let minY = minPt.y;
+    let maxX = maxPt.x;
+    let maxY = maxPt.y;
+
+    minPt.x = Math.ceil(minPt.x / actualCellWidth) * actualCellWidth;
+    minPt.y = Math.ceil(minPt.y / actualCellWidth) * actualCellWidth;
+    maxPt.x = Math.floor(maxPt.x / actualCellWidth) * actualCellWidth;
+    maxPt.y = Math.floor(maxPt.y / actualCellWidth) * actualCellWidth;
+
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(0,0,0,1)';
+    ctx.lineWidth = .1;
+
+    for(let x = minPt.x; x <= maxPt.x + actualCellWidth / 100; x += actualCellWidth){
+        let bottom = graphToScreen(new Point(x, minY));
+        let top = graphToScreen(new Point(x, maxY));
+        ctx.moveTo(bottom.x, bottom.y);
+        ctx.lineTo(top.x, top.y);
+    }
+
+    for(let y = minPt.y; y <= maxPt.y + actualCellWidth / 100; y += actualCellWidth){
+        let left = graphToScreen(new Point(minX, y));
+        let right = graphToScreen(new Point(maxX, y));
+        ctx.moveTo(left.x, left.y);
+        ctx.lineTo(right.x, right.y);
+    }
+
+    ctx.stroke();
+}
+
 function drawGraph(){
     let canvas = document.getElementById('canvas');
     let ctx = canvas.getContext('2d');
 
     ctx.fillStyle = 'rgb(255,255,255)';
     ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+    drawGrid(ctx, canvas);
     
     for(let node of graph){
         drawNode(ctx, node);
     }
 
     ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(0,0,0,.5)';
+    ctx.strokeStyle = 'rgba(0,0,0,1)';
     ctx.beginPath();
     for(let struct of structs){
         drawStruct(struct, canvas, ctx);
@@ -111,7 +164,6 @@ function drawGraph(){
     for(let struct of extraStructs){
         drawStruct(struct, canvas, ctx);
     }
-    console.log(extraStructs.length, structs.length);
     ctx.stroke();
 }
 // a little bit of a hack to get drawGraph visible to screen.js
