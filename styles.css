@@ -17,21 +17,110 @@ canvas{
 
 #button_container{
 	position: absolute;
-	bottom: 15px;
-	margin-left: 50%;
-	transform: translateX(-50%);
+	left: 15px;
+	top: 15px;
 	display:flex;
+	flex-direction: column;
 }
 
 .struct_button{
 	display:inline-flex;
+	position:relative;
 	padding:7px;
 	background-color:white;
-	border:none;
+	align-self:center;
+	border:2px solid rgba(0,0,0,.5);
+	border-radius:3px;
 	margin:5px;
-	box-shadow: 0px 0px 5px rgba(0,0,0,.5);
+	outline:none;
 }
 
-.struct_button:hover{
-	background-color:rgb(210, 210, 210);
+.struct_button:hover:not(.locked):not([disabled]){
+	box-shadow: 0px 0px 2px 2px rgba(0,0,0,.2);
+}
+
+.struct_button.locked::before{
+	content:"";
+	position: absolute;
+	left:100%;
+	top:-2px;
+	bottom:-2px;
+	width:0px;
+	background-color:rgba(0,0,255,.7);
+	transition:all .3s ease;
+	background-image: url('img/unlock.svg');
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size:0px;
+}
+
+.struct_button.locked.unlock_in_progress::before{
+	width:22px;
+	background-size:16px;
+	background-color:orange;
+}
+.struct_button.locked.unlock_failed::before{
+	width:22px;
+	background-size:16px;
+	background-color:rgba(255,0,0,.7);
+}
+.struct_button.locked.unlock_successful::before{
+	width:22px;
+	background-size:16px;
+	background-color:rgba(0, 133, 0, 1);
+}
+
+.struct_button:hover.locked:not([disabled])::before{
+	width:22px;
+	background-size:16px;
+}
+
+.struct_button_selected{
+	border-radius:4px;
+	border-color:black;
+	background-color:rgba(0,0,255,.7);
+	color:white;
+}
+
+.locked::after {
+	background-color:rgba(255,255,255,.8);
+	content:"";
+	position:absolute;
+	left:0px;
+	right:0px;
+	bottom:0px;
+	top:0px;
+	background-image: url('img/lock.svg');
+	background-repeat: no-repeat;
+	background-size:18px;
+	background-position: center;
+}
+
+.tooltip{
+	position:absolute;
+	left:calc(100% + 35px);
+	display:flex;
+	background-color:white;
+	border:3px solid black;
+	width:300px;
+	border-radius:3px;
+	flex-direction: column;
+	padding:4px;
+}
+.tooltip::after{
+	content:"";
+	position:absolute;
+	right:100%;
+	top:-3px;
+	border-right: 10px solid black;
+	border-top: 10px solid transparent;
+	border-bottom:10px solid transparent;
+}
+
+#unlock_tooltip_footer{
+	color:rgba(0,0,0,.4);
+}
+
+.hidden {
+	visibility: collapse;
 }

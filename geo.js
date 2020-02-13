@@ -42,12 +42,14 @@ const CONSTRUCT_TYPE = {
 function Line(node1, node2){
     this.node1 = node1;
     this.node2 = node2;
+    this.dependencies = [node1, node2];
     this.p1 = undefined;
     this.p2 = undefined;
     this.type = STRUCT_TYPE.LINE;
     this.hidden = false;
     this.get = (index) => index === 0 ? this.p1 : this.p2;
-    this.intersect = (otherStruct, dependencyInfo) => {
+    // swap order models otherStruct.intersect(this)
+    this.intersect = (otherStruct, swapOrder) => {
         if(otherStruct.type === STRUCT_TYPE.LINE){
             // line line intersection
             let a = this.p1, b = this.p2, c = otherStruct.p1, d = otherStruct.p2;
@@ -78,14 +80,16 @@ function Line(node1, node2){
             let a = Math.sqrt(R**2 - r**2);
             let sol1 = nearestPt.add(lineDir.scaleBy(a));
             let sol2 = nearestPt.add(lineDir.scaleBy(-1*a));
-            
-            let testPt = dependencyInfo.nearestTo;
-            let d1 = sol1.distanceSquared(testPt), d2 = sol2.distanceSquared(testPt);
-            if(d1 < d2){
-                return sol1; 
+
+            // if swapOrder === true, then we choose the solution to the left of the line 
+            // starting at the center of the circle and meeting the line at a right angle
+            const centerToNearest = nearestPt.subtract(center);
+            const centerToSol1 = sol1.subtract(center);
+            let sol1Left = centerToNearest.cross2d(centerToSol1) >= 0;
+            if(sol1Left && !swapOrder || !sol1Left && swapOrder){
+                return sol1;
             }
             return sol2;
-
         }else{
             console.log("The given struct is not recognized");
             return undefined;
@@ -97,6 +101,10 @@ function Line(node1, node2){
             this.p2 = this.node2.getCoords();
         }
     };
+    this.resetCoords = () => {
+        this.p1 = undefined;
+        this.setCoords();
+    }
     this.incidentTo = (coords, tolerance) => {
         this.setCoords();
         let distToLine = Math.abs(coords.subtract(this.p1).cross2d(this.p2.subtract(this.p1).normalize()));
@@ -111,11 +119,12 @@ function Circle(centerNode, radialNode){
     this.radiusPt = undefined;
     this.centerNode = centerNode;
     this.radialNode = radialNode;
+    this.dependencies = [centerNode, radialNode];
     this.type = STRUCT_TYPE.CIRCLE;
     this.hidden = false;
-    this.intersect = (otherStruct, dependencyInfo) => {
+    this.intersect = (otherStruct) => {
         if(otherStruct.type === STRUCT_TYPE.LINE){
-            return otherStruct.intersect(this, dependencyInfo);
+            return otherStruct.intersect(this, true);
         }else if(otherStruct.type === STRUCT_TYPE.CIRCLE){
             // circle circle intersection
             let otherCenter = otherStruct.center;
@@ -135,9 +144,11 @@ function Circle(centerNode, radialNode){
             let sol1 = basis1.scaleBy(x).add(basis2.scaleBy(h)).add(this.center);
             let sol2 = basis1.scaleBy(x).add(basis2.scaleBy(-h)).add(this.center);
 
-            let testPt = dependencyInfo.nearestTo;
-            let d1 = sol1.distanceSquared(testPt), d2 = sol2.distanceSquared(testPt);
-            if(d1 < d2){
+            // we choose the solution to the left of the vector from this.center to otherCenter 
+            const offsetSol1 = sol1.subtract(this.center);
+            const centerToCenter = otherCenter.subtract(this.center);
+            const sol1Left = centerToCenter.cross2d(offsetSol1) >= 0;
+            if(sol1Left){
                 return sol1;
             }
             return sol2;
@@ -149,6 +160,10 @@ function Circle(centerNode, radialNode){
         if(!this.radius){
             this.radius = this.center.distance(this.radiusPt);
         }
+    }
+    this.resetCoords = () => {
+        this.radius = undefined;
+        this.setCoords();
     }
     this.incidentTo = (coords, tolerance) => {
         this.setCoords();

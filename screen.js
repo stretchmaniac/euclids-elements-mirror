@@ -1,3 +1,5 @@
+let overrideDragEvent = undefined;
+
 // for panning and scrolling 
 function initScreen(){
 
@@ -17,7 +19,12 @@ function initScreen(){
         if(e.buttons === 1){
             // so e.movementX and e.movementY is supposed to do this stuff for us, but 
             // it's buggy in both chrome and firefox, so no luck there.
-            pan(currentPt.subtract(mousePos));
+            let offset = currentPt.subtract(mousePos);
+            if(!overrideDragEvent){
+                pan(offset);
+            } else {
+                overrideDragEvent(offset);
+            }
             drawGraph();
         }
         mousePos = currentPt;

@@ -34,8 +34,16 @@ function getStructIntersection(pixelCoords){
         return undefined;
     }
 
-    // pick the "oldest" structs. Coincidentally, they are the first in the list 
-    return [structsInRange[0], structsInRange[1]];
+    // order matters here if the we're talking about anything other than a line-line intersection.
+    // See geo.js intersect functions 
+    const s1 = structsInRange[0];
+    const s2 = structsInRange[1];
+    const intPt1 = s1.intersect(s2);
+    const intPt2 = s2.intersect(s1);
+    if(intPt1.distance(graphCoords) <= intPt2.distance(graphCoords)){
+        return [s1, s2];
+    }
+    return [s2, s1];
 }
 
 function drawNode(ctx, node, color){
@@ -45,20 +53,23 @@ function drawNode(ctx, node, color){
     let center = graphToScreen(node.getCoords());
     let radius = NODE_RADIUS; 
 
+    if(node.root && !node.color){
+        node.color = 'rgba(0,160,0,.5)';
+    }
+    if(node.testNode && !node.color){
+        node.color = 'rgba(255, 218, 10, .5)';
+    }
     color = node.color ? node.color : 'rgba(0,0,255,.5)';
 
     ctx.fillStyle = color;
 
-    // draw a little filled in green circle 
+    // draw a little filled in circle 
     ctx.beginPath();
     ctx.arc(center.x, center.y, radius, 0, 2*Math.PI);
     ctx.fill();
 }
 
 function drawStruct(struct, canvas, ctx){
-    if(struct.hidden){
-        return;
-    }
     if(struct.type === STRUCT_TYPE.CIRCLE){
         drawCircle(ctx, struct);
     } else if(struct.type === STRUCT_TYPE.LINE){
@@ -165,12 +176,32 @@ function drawGraph(){
     ctx.strokeStyle = 'rgba(0,0,0,1)';
     ctx.beginPath();
     for(let struct of structs){
-        drawStruct(struct, canvas, ctx);
+        if(!struct.hidden){
+            drawStruct(struct, canvas, ctx);
+        }
     }
     for(let struct of extraStructs){
-        drawStruct(struct, canvas, ctx);
+        if(!struct.hidden){
+            drawStruct(struct, canvas, ctx);
+        }
     }
     ctx.stroke();
+
+    ctx.lineWidth = .3;
+    ctx.strokeStyle = 'rgba(0,0,0,.3)';
+    ctx.beginPath();
+    for(let struct of structs){
+        if(struct.hidden){
+            drawStruct(struct, canvas, ctx);
+        }
+    }
+    for(let struct of extraStructs){
+        if(struct.hidden){
+            drawStruct(struct, canvas, ctx);
+        }
+    }
+    ctx.stroke();
+
 }
 // a little bit of a hack to get drawGraph visible to screen.js
 window.drawGraph = drawGraph;

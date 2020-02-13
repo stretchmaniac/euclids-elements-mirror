@@ -18,7 +18,7 @@ function animationOnHover(mousePos){
     let ctx = document.getElementById('canvas').getContext('2d');
     // snap to nodes if close enough
     for(let node of graph){
-        if(graphToScreen(node.getCoords()).distance(mousePos) <= snapDist){
+        if(graphToScreen(node.getCoords()).distance(mousePos) <= snapDist && !node.hidden){
             if(node.closeAnimationObj){
                 node.closeAnimationObj.kill();
             }
