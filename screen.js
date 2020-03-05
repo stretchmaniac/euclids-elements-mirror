@@ -11,12 +11,20 @@ function initScreen(){
     canvas.height = body.clientHeight;
 
     let mousePos = undefined;
+    let mouseDown = false;
 
-    canvas.addEventListener("mousedown", (e) => { mousePos = new Point(e.clientX, e.clientY); });
+    canvas.addEventListener("mousedown", (e) => { 
+        mousePos = new Point(e.clientX, e.clientY); 
+        mouseDown = true;
+    });
+
+    canvas.addEventListener("mouseup", (e) => {
+        mouseDown = false;
+    });
 
     canvas.addEventListener("mousemove", (e) => {
         let currentPt = new Point(e.clientX, e.clientY);
-        if(e.buttons === 1){
+        if(e.buttons === 1 && mouseDown){
             // so e.movementX and e.movementY is supposed to do this stuff for us, but 
             // it's buggy in both chrome and firefox, so no luck there.
             let offset = currentPt.subtract(mousePos);
